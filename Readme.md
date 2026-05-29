@@ -54,7 +54,7 @@
 2. 导入本项目提供的采集端 JS 脚本。
 3. 在脚本代码顶部的配置区，将 Webhook URL 指向你的 HA 地址：
 ```javascript
-const WEBHOOK_URL = "http://[你的HA局域网IP]:8123/api/webhook/gbnpa_router_webhook";
+const WEBHOOK_URL = "http://[你的HA可访问IP]:8123/api/webhook/gbnpa_router_webhook";
 ```
 4. 登录路由器 Web 后台并保持该页面在后台运行，数据即可开始实时推送。
 
