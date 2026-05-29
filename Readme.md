@@ -1,4 +1,4 @@
-# GBNPA Router Sync by 哥哥科技
+# ZTE-Stat_HA by 哥哥科技（GBNPA Router Sync）
 
 [English](https://github.com/ucxn/ZTE-Stat_Max/blob/main/README_EN.md) | **简体中文**
 
@@ -13,6 +13,8 @@
 采用被动数据接收架构，HA 不会主动向路由器发起 HTTP 轮询请求，避免对家庭网络管理业务的干扰。
 
 该项目包含两个相互配合的子组件：
+
+**主项目**[![主项目](https://img.shields.io/badge/Network-ZTE--Stat__Max-FF4C00?style=for-the-badge&logo=github&logoColor=white)](https://github.com/ucxn/ZTE-Stat_Max)
 
 1. **ZTE-Stat_Max（双 JS 脚本）**：运行于浏览器前端，负责接管中兴路由器后台的数据流并优化本地 UI 展示。
 2. **GBNPA-Router-Sync（HA 集成）**：运行于 Home Assistant 服务器，实现状态的多端无限转发与图表记录。
@@ -72,7 +74,9 @@ const WEBHOOK_URL = "http://[你的HA局域网IP]:8123/api/webhook/gbnpa_router_
 
 ## 📄 协议 (License)
 
-[GNU-GPL 3.0](https://www.gnu.org/licenses/gpl-3.0.html)
+[Eclipse Public License - v 2.0](https://www.eclipse.org/legal/epl-2.0/)
+
+特别声明：**兄弟项目[ZTE-Stat_Max](https://github.com/ucxn/ZTE-Stat_Max)** 保持独立，依然为 GPL 3.0 or later.
 
 ---
 *Authored by 哥哥科技*
