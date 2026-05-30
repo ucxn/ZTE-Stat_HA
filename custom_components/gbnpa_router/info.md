@@ -62,7 +62,9 @@ const WEBHOOK_URL = "http://[你的HA可访问IP]:8123/api/webhook/gbnpa_router_
 
 ## 📄 协议 (License)
 
-[GNU-GPL 3.0](https://www.gnu.org/licenses/gpl-3.0.html)
+[Mozilla Public License - v 2.0](https://www.mozilla.org/MPL/2.0)
+
+特别声明：**依赖项 [ZTE-Stat_Max](https://github.com/ucxn/ZTE-Stat_Max)** 保持独立，依然为 GPL 3.0 or later 不变.
 
 ---
 *Authored by 哥哥科技*
