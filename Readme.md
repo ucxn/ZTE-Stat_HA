@@ -45,12 +45,19 @@
 
 1. 将本项目目录下的 `custom_components/gbnpa_router` 文件夹完整复制到你的 Home Assistant 的 `config/custom_components/` 目录下。
 2. 重启 Home Assistant 服务。
-3. 进入 HA 面板，点击 **配置 -> 设备与服务 -> 添加集成**。
+3. 进入 HA 面板，点击 **设置 -> 设备与服务 -> 添加集成**。
 4. 搜索 **GBNPA** 并点击添加，系统将自动完成 Webhook 监听端口的初始化注册。
+
+> [!TIP]
+> ### 通过 HACS 安装
+> 此方法须确保 HAOS 具有良好的网络环境，否则请按前述方法手动安装即可。
+> 
+> 打开 Home Assistant，转到“HACS”面板，点击右上角的 <kbd>⋮</kbd> ，选择 <img src="https://api.iconify.design/mdi/source-repository.svg?color=%23444444" width="16" align="center"> `Custom repositories`
+> Type 选择 🧩 `Integration`，地址输入（可复制）：`ucxn/ZTE-Stat_HA`
 
 ### 阶段二：数据采集端部署
 
-1. 确保在局域网内某台常亮主机（Home Server）的浏览器上已安装 **[脚本猫 (ScriptCat)](https://scriptcat.org/zh-CN/script-show-page/6194)** 插件。
+1. 确保有某台 7×24 主机（Home Server）的浏览器上已安装 **[脚本猫 (ScriptCat)](https://scriptcat.org/zh-CN/script-show-page/6194)** 插件。
 2. 导入本项目提供的采集端 JS 脚本。
 3. 在脚本代码顶部的配置区，将 Webhook URL 指向你的 HA 地址：
 ```javascript
