@@ -52,7 +52,7 @@
 > ### 通过 HACS 安装
 > 此方法须确保 HAOS 具有良好的网络环境，否则请按前述方法手动安装即可。
 > 
-> 打开 Home Assistant，转到“HACS”面板，点击右上角的 <kbd>⋮</kbd> ，选择 <img src="https://api.iconify.design/mdi/source-repository.svg?color=%23444444" width="16" align="center"> `Custom repositories`
+> 打开 Home Assistant，转到“HACS”面板，点击右上角的 <kbd>⋮</kbd> ，选择 <img src="https://api.iconify.design/mdi/source-repository.svg?color=%23444444" width="16" align="center"> Custom repositories <br><br>
 > Type 选择 🧩 `Integration`，地址输入（可复制）：`ucxn/ZTE-Stat_HA`
 
 ### 阶段二：数据采集端部署
