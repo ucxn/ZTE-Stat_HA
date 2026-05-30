@@ -6,7 +6,7 @@
 
 本自定义集成通过“油猴脚本截留 + Webhook 异步推送”的组合架构，在不破坏官方原有拓扑、不触发中兴路由器“Web 后台单会话互踢”机制的前提下，将路由器底层的高精度流量数据与设备状态无缝接入 Home Assistant。为网络工程人员提供长周期的流量统计与全局态势观测能力。
 
-它配合前端油猴脚本 [ZTE-Stat_Max](https://github.com/ucxn/ZTE-Stat_Max)，将浏览器端抓取到的高精度网络流量数据，通过 Webhook 单向推送到 Home Assistant 中枢进行持久化存储与展示。
+配合前端脚本猫插件 [ZTE-Stat_Max](https://github.com/ucxn/ZTE-Stat_Max)，将浏览器端抓取到的高精度网络流量数据，通过 Webhook 推送到 Home Assistant 中枢进行持久化存储与展示。
 
 无论是全屋大盘的上下行总流量，还是单台设备的实时吞吐状态，都已被解耦并整合至 HA 的标准设备卡片中。无需频繁登录路由器后台，即可在任意移动端或桌面端实时掌控局域网网络状态。
 
@@ -61,17 +61,17 @@
 2. 导入本项目提供的采集端 JS 脚本。
 3. 在脚本代码顶部的配置区，将 Webhook URL 指向你的 HA 地址：
 ```javascript
-const WEBHOOK_URL = "http://[你的HA可访问IP]:8123/api/webhook/gbnpa_router_webhook";
+const WEBHOOK_URL = "http://[HA可访问IP]:8123/api/webhook/gbnpa_router_webhook";
 ```
 4. 登录路由器 Web 后台并保持该页面在后台运行，数据即可开始实时推送。
 
 ## ⚙️ 架构说明与目录结构 (Architecture)
 
 项目包含以下核心组件：
-* `油猴采集脚本.js`：运行于浏览器前端，负责高频采样、数据清洗与 JSON 打包。
+* `态势感知探针.js`：运行于浏览器前端，负责高频采样、数据清洗与 JSON 打包。
 * `__init__.py`：HA 集成入口，负责注册 Webhook、管理全局内存字典与分发更新信号。
 * `sensor.py`：实体生成引擎，负责动态发现内网新节点、创建流量传感器并定义数据保护策略。
-* `brand/`：存放 UI 渲染所需的定制化 Logo 与横幅静态资源。
+
 
 ## ⚠️ 注意事项 (Notes)
 
