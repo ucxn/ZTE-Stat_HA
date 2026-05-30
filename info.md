@@ -4,7 +4,9 @@
 
 *ZTE-Stat_Max* & *GBNPA-Router-Sync* 是由 **哥哥科技** 开发的一套网络数据遥测与多端转发解决方案。
 
-本自定义集成通过“油猴脚本截留 + Webhook 异步推送”的组合架构，在不破坏官方原有拓扑、不触发中兴路由器“Web 后台单会话互踢”机制的前提下，将路由器底层的高精度流量数据与设备状态无缝接入 Home Assistant。为网络工程人员提供长周期的流量统计与全局态势观测能力。
+中兴路由器 × 全屋智能家居平台联动接入插件：Home Assistant 极客集成、UI增强，硬路由NPU最佳伴侣、无需刷机，支持全系ZTE！设备列表平铺化，大屏可视化一点通，你所要的，都在这里，无需频繁切换页面…
+
+本自定义集成通过“油猴脚本 + Webhook 异步推送”的组合架构，在不破坏官方原有拓扑、不触发中兴路由器“Web 后台单会话互踢”机制的前提下，将路由器底层的高精度流量数据与设备状态无缝接入 Home Assistant。为网络工程人员提供长周期的流量统计与全局态势观测能力。
 
 配合前端脚本猫插件 [ZTE-Stat_Max](https://github.com/ucxn/ZTE-Stat_Max)，将浏览器端抓取到的高精度网络流量数据，通过 Webhook 推送到 Home Assistant 中枢进行持久化存储与展示。
 
@@ -64,7 +66,7 @@ const WEBHOOK_URL = "http://[HA的IP]:8123/api/webhook/gbnpa_router_webhook";
 
 [Mozilla Public License - v2.0](https://www.mozilla.org/MPL/2.0)
 
-特别声明：**兄弟项目[ZTE-Stat_Max](https://github.com/ucxn/ZTE-Stat_Max)** 保持独立，依然为 GPL 3.0 or later.
+特别声明：**兄弟项目[ZTE-Stat_Max](https://github.com/ucxn/ZTE-Stat_Max)** 保持独立，依然为 AGPL 3.0 or later.
 
 ---
 *Authored by 哥哥科技*
