@@ -26,19 +26,30 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         new_entities = []
         
         # 1. 注册全局大盘设备
-        if not global_added and data.get("time_str"):
+        if not global_added and data.get("time_obj"):
             global_added = True
             # 加入探针时间
             new_entities.append(
-                GbnpaGlobalSensor(hass, "time_str", "探针最后握手", "mdi:clock-check-outline", is_traffic=False)
+                GbnpaGlobalSensor(hass, "time_obj", "探针最后握手", "mdi:clock-check-outline", is_traffic=False)
             )
             # 动态遍历注入所有大盘流量实体
             for key, value in data.get("global", {}).items():
                 cn_name = GLOBAL_NAME_MAP.get(key, key.upper())
-                icon = "mdi:upload-network" if "up" in key else "mdi:download-network"
-                new_entities.append(
-                    GbnpaGlobalSensor(hass, key, cn_name, icon, is_traffic=True)
-                )
+                if key == "wan_up": 
+                    icon = "mdi:cloud-upload"
+                elif key == "wan_down": 
+                    icon = "mdi:cloud-download"
+                elif key == "lan_off_up": 
+                    icon = "mdi:arrow-up-bold-hexagon-outline"
+                elif key == "lan_off_down": 
+                    icon = "mdi:arrow-down-bold-hexagon-outline"
+                elif key == "lan_high_up": 
+                    icon = "mdi:upload"
+                elif key == "lan_high_down": 
+                    icon = "mdi:download"
+                else: 
+                    icon = "mdi:upload-network" if "up" in key else "mdi:download-network"                   
+                new_entities.append(GbnpaGlobalSensor(hass, key, cn_name, icon, is_traffic=True))
             
         # 2. 动态发现新加入的内网节点 MAC
         for mac, info in data.get("devices", {}).items():
@@ -100,8 +111,8 @@ class GbnpaGlobalSensor(SensorEntity):
     @property
     def native_value(self):
         # 探针时间原样返回
-        if self._key == "time_str":
-            return self.hass.data[DOMAIN].get("time_str")
+        if self._key == "time_obj":
+            return self.hass.data[DOMAIN].get("time_obj")
             
         # 清洗防御机制 (DRY 原则)
         raw_val = self.hass.data[DOMAIN]["global"].get(self._key)
@@ -165,11 +176,17 @@ class GbnpaDeviceSensor(SensorEntity):
     def icon(self):
         """原版精华：动态图标渲染引擎"""
         if self._is_traffic:
-            return "mdi:upload" if self._type in ("up", "raw_up") else "mdi:download"
+            if self._type == "raw_up": return "mdi:arrow-up-bold-circle"
+            if self._type == "raw_down": return "mdi:arrow-down-bold-circle"
+            return "mdi:upload" if self._type == "up" else "mdi:download"
         
         # 状态图标联动
-        raw_status = self.hass.data[DOMAIN]["devices"].get(self._mac, {}).get("status", "unknown")
-        return "mdi:shield-check" if raw_status == "offline_shield" else "mdi:lan-connect"
+        raw_status = str(self.hass.data[DOMAIN]["devices"].get(self._mac, {}).get("status", "")).lower()
+        if raw_status in ("off", "offline"):
+            return "mdi:lan-disconnect"
+        elif raw_status == "offline_shield":
+            return "mdi:shield-check"
+        return "mdi:lan-connect"
 
     @property
     def native_value(self):
@@ -187,12 +204,14 @@ class GbnpaDeviceSensor(SensorEntity):
                 
         # 2. 状态数据走中文翻译引擎
         if self._type == "status":
-            raw_status = raw_val if raw_val else "unknown"
-            if raw_status == "offline_shield":
-                return "断线护盾生效中"
-            return f"在线 ({raw_status})"
-            
-        return raw_val
+            if not raw_val:
+                return "未知"
+            chk_status = str(raw_val).lower()
+            if chk_status in ("off", "offline"):
+                return "离线"
+            elif chk_status == "offline_shield":
+                return "离线 (护盾)"
+            return str(raw_val)
 
     async def async_added_to_hass(self):
         self.async_on_remove(

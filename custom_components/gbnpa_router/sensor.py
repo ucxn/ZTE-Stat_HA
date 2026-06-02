@@ -12,6 +12,10 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         from .sensor1 import async_setup_entry as setup_impl
     elif current_mode == 2:
         from .sensor2 import async_setup_entry as setup_impl
+    elif current_mode == 3:
+        from .sensor3 import async_setup_entry as setup_impl
+    elif current_mode == 4:
+        from .sensor4 import async_setup_entry as setup_impl
     else:
         # 防御性回退
         from .sensor1 import async_setup_entry as setup_impl

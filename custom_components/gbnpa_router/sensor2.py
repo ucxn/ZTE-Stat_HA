@@ -26,19 +26,30 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         new_entities = []
         
         # 1. 注册全局大盘设备
-        if not global_added and data.get("time_str"):
+        if not global_added and data.get("time_obj"):
             global_added = True
             # 加入探针时间
             new_entities.append(
-                GbnpaGlobalSensor(hass, "time_str", "探针最后握手", "mdi:clock-check-outline", is_traffic=False)
+                GbnpaGlobalSensor(hass, "time_obj", "探针最后握手", "mdi:clock-check-outline", is_traffic=False)
             )
             # 动态遍历注入所有大盘流量实体
             for key, value in data.get("global", {}).items():
                 cn_name = GLOBAL_NAME_MAP.get(key, key.upper())
-                icon = "mdi:upload-network" if "up" in key else "mdi:download-network"
-                new_entities.append(
-                    GbnpaGlobalSensor(hass, key, cn_name, icon, is_traffic=True)
-                )
+                if key == "wan_up": 
+                    icon = "mdi:cloud-upload"
+                elif key == "wan_down": 
+                    icon = "mdi:cloud-download"
+                elif key == "lan_off_up": 
+                    icon = "mdi:arrow-up-bold-hexagon-outline"
+                elif key == "lan_off_down": 
+                    icon = "mdi:arrow-down-bold-hexagon-outline"
+                elif key == "lan_high_up": 
+                    icon = "mdi:upload"
+                elif key == "lan_high_down": 
+                    icon = "mdi:download"
+                else: 
+                    icon = "mdi:upload-network" if "up" in key else "mdi:download-network"                   
+                new_entities.append(GbnpaGlobalSensor(hass, key, cn_name, icon, is_traffic=True))
             
         # 2. 动态发现新加入的内网节点 MAC
         for mac, info in data.get("devices", {}).items():
@@ -98,8 +109,8 @@ class GbnpaGlobalSensor(SensorEntity):
     @property
     def native_value(self):
         # 探针时间原样返回
-        if self._key == "time_str":
-            return self.hass.data[DOMAIN].get("time_str")
+        if self._key == "time_obj":
+            return self.hass.data[DOMAIN].get("time_obj")
             
         # 清洗防御机制 (DRY 原则)
         raw_val = self.hass.data[DOMAIN]["global"].get(self._key)

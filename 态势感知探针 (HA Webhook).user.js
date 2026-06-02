@@ -28,12 +28,7 @@ return new Promise((resolve, reject) => {
         resolve(); return;
     }
 
-    if (snapshot.timestamp) {
-        let snapshotTime = new Date(snapshot.timestamp);
-        let pad = (n) => n.toString().padStart(2, '0');
-        // 将翻译好的时间字符串直接挂载到 snapshot 对象上
-        snapshot.time_str = `${snapshotTime.getFullYear()}-${pad(snapshotTime.getMonth()+1)}-${pad(snapshotTime.getDate())} ${pad(snapshotTime.getHours())}:${pad(snapshotTime.getMinutes())}:${pad(snapshotTime.getSeconds())}`;
-    }
+    if (snapshot.timestamp) snapshot.timestamp = Math.floor(snapshot.timestamp / 1000);
 
     // 2. 将快照推向 HA Webhook
     const webhookUrl = "http://27.10.8.52:8123/api/webhook/gbnpa_router_webhook";

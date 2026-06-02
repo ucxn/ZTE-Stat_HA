@@ -5,6 +5,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.components import webhook
 from homeassistant.helpers.dispatcher import async_dispatcher_send
+from homeassistant.util import dt as dt_util
 
 DOMAIN = "gbnpa_router"
 # 保持和你油猴脚本里的 webhook 路径一致！
@@ -16,7 +17,7 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """通过 UI 配置初始化集成"""
-    hass.data.setdefault(DOMAIN, {"devices": {}, "global": {}, "time_str": None})
+    hass.data.setdefault(DOMAIN, {"devices": {}, "global": {}, "time_obj": None})
 
     async def handle_webhook(hass, webhook_id, request):
         """处理油猴发来的 JSON 数据包"""
@@ -27,7 +28,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             if not data:
                 _LOGGER.warning("[GBNPA] 警告：收到无效或空数据包，链路可能出现异常抖动。")            
             # 更新内存数据
-            hass.data[DOMAIN]["time_str"] = data.get("time_str")
+            # 0 废物变量，直接探测字典键值并内联转换
+            if "timestamp" in data:
+                hass.data[DOMAIN]["time_obj"] = dt_util.utc_from_timestamp(data["timestamp"])
             if "global" in data:
                 hass.data[DOMAIN]["global"].update(data["global"])
             if "devices" in data:

@@ -4,7 +4,9 @@ from homeassistant import config_entries
 DOMAIN = "gbnpa_router"
 SENSOR_MODES = {
     1: "独立隐藏实体模式 (数据独立，可长期追踪，推荐)",
-    2: "附加属性折叠模式 (极简面板，不生成多余实体)"
+    2: "附加属性折叠模式 (极简面板，不生成多余实体)",
+    3: "附加属性折叠模式 (自动添加可能存在的实体，汉化)",
+    4: "独立隐藏实体模式 (包含网页计算的微积分流量值)"
 }
 
 class GbnpaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
