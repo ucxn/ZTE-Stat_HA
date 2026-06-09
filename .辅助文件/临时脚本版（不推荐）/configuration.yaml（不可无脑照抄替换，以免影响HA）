@@ -13,7 +13,7 @@ recorder:
   auto_purge: true
   exclude:
     entities:
-      - sensor.gbnpa_last_sync_ms
+      - sensor.gbnpa_global_time_obj
       - sensor.gbnpa_global_time_str
 supervisor_panel:
 python_script:

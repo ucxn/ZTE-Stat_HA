@@ -14,5 +14,5 @@ recorder:
   auto_repack: true
   exclude:
     entities:
-      - sensor.gbnpa_global_time_str
+      - sensor.gbnpa_global_time_obj
 supervisor_panel:
