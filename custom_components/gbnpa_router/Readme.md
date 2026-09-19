@@ -59,7 +59,7 @@ The system has two parts — the HA receiver and the JS collector. Set them up i
 
 ### Phase 2: Data Collector Setup
 
-1. Make sure a browser on some 24/7 host (a home server) has the **[ScriptCat](https://scriptcat.org/zh-CN/script-show-page/6194)** extension installed.
+1. Make sure a browser on some 24/7 host (a home server) has the **[ScriptCat](https://scriptcat.org/zh-CN/script-show-page/6676)** extension installed.
 2. Import the collector JS script provided in this repo.
 3. At the top of the script, point the Webhook URL config at your HA address:
 ```javascript

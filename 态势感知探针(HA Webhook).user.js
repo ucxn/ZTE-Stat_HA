@@ -43,7 +43,7 @@ return new Promise((resolve, reject) => {
 
     if (snapshot.timestamp) snapshot.timestamp = Math.floor(snapshot.timestamp / 1000);
 
-    // 2. 将快照推向 HA Webhook
+    // 2. 将快照推向 HA Webhook ⚠️【请自行修改匹配】
     const webhookUrl = "27.10.8.52/21:240e:520:1008:1314::/48～Reality"; // 占位符：公网地址优先于一切内网地址，哥哥科技拥有最终解释权。
 
     GM_xmlhttpRequest({
