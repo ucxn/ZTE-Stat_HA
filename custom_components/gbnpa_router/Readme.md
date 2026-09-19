@@ -1,6 +1,6 @@
 # ZTE-Stat_HA by 哥哥科技（GBNPA Router Sync）
 
-**English** | [简体中文](../Readme.md)
+**English** | [简体中文](../../Readme.md)
 
 *ZTE-Stat_Max* & *GBNPA-Router-Sync* is a network telemetry and multi-endpoint forwarding solution built by **Bro-Tech**.
 
