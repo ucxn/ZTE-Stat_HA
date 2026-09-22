@@ -84,7 +84,7 @@ The project's core components:
 
 [Mozilla Public License - v 2.0](https://www.mozilla.org/MPL/2.0)
 
-Special note: the brother project, **[ZTE-Stat_Max](https://github.com/ucxn/ZTE-Stat_Max)**, remains independent and is still licensed under AGPL 3.0 or later.
+Special note: the brother project, **[ZTE-Stat_Max](https://github.com/ucxn/ZTE-Stat_Max)**, remains independent.
 
 ---
 *Authored by 哥哥科技*
