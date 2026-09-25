@@ -3,7 +3,6 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 DOMAIN = "gbnpa_router"
 SIGNAL_UPDATE = f"{DOMAIN}_data_update"
-SIGNAL_DISCOVERY = f"{DOMAIN}_discovery"
 
 GLOBAL_NAME_MAP = {
     "wan_up": "WAN总上传",
@@ -19,7 +18,6 @@ GLOBAL_NAME_MAP = {
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """动态生成实体与设备"""
     known_macs = set()
-    hass.data[DOMAIN]["_known_macs"] = known_macs
     known_global_keys = set()
     time_sensor_added = False
 
@@ -28,7 +26,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         data = hass.data[DOMAIN]
         new_entities = []
         
-        # 1. 注册全局大盘设备，持续发现后续才出现的新键
+        # 1. 注册全局大盘设备，并持续发现后续才出现的新键
         if data.get("time_obj"):
             if not time_sensor_added:
                 time_sensor_added = True
@@ -57,6 +55,9 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                     icon = "mdi:upload-network" if "up" in key else "mdi:download-network"                   
                 new_entities.append(GbnpaGlobalSensor(hass, key, cn_name, icon, is_traffic=True))
             
+        # 清理服务删掉设备后，同步释放本模式的 MAC 发现缓存
+        known_macs.intersection_update(mac for mac in data.get("devices", {}) if mac)
+
         # 2. 动态发现新加入的内网节点 MAC
         for mac, info in data.get("devices", {}).items():
             if not mac:
@@ -69,7 +70,9 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                 new_entities.extend([
                     GbnpaDeviceSensor(hass, mac, "up", device_name, is_traffic=True),
                     GbnpaDeviceSensor(hass, mac, "down", device_name, is_traffic=True),
-                    GbnpaDeviceSensor(hass, mac, "status", device_name, is_traffic=False)
+                    GbnpaDeviceSensor(hass, mac, "status", device_name, is_traffic=False),
+                    GbnpaDeviceSensor(hass, mac, "raw_up", device_name, is_traffic=True),
+                    GbnpaDeviceSensor(hass, mac, "raw_down", device_name, is_traffic=True)
                 ])
                 
         # 3. 批量推入 HA
@@ -78,7 +81,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     # 监听 Webhook，并保存注销句柄
     hass.data[DOMAIN]["unsub_dispatcher"] = async_dispatcher_connect(
-        hass, SIGNAL_DISCOVERY, async_discover_new_entities
+        hass, SIGNAL_UPDATE, async_discover_new_entities
     )
 
     # 重载时直接吃现存内存数据，不必等下一次 Webhook 才恢复实体
@@ -154,8 +157,10 @@ class GbnpaDeviceSensor(SensorEntity):
         
         # 名称处理
         self._attr_has_entity_name = True
-        type_cn = {"up": "上传", "down": "下载", "status": "状态"}.get(sensor_type, sensor_type)
+        type_cn = {"up": "上传", "down": "下载", "status": "状态", "raw_up": "本次上行", "raw_down": "本次下行"}.get(sensor_type, sensor_type)
         self._attr_name = type_cn
+        if sensor_type in ["raw_up", "raw_down"]:
+            self._attr_entity_registry_visible_default = False
         
         # 精华：流量数据加上 b 和 device_class
         if is_traffic:
@@ -181,13 +186,15 @@ class GbnpaDeviceSensor(SensorEntity):
     def icon(self):
         """原版精华：动态图标渲染引擎"""
         if self._is_traffic:
+            if self._type == "raw_up": return "mdi:arrow-up-bold-circle"
+            if self._type == "raw_down": return "mdi:arrow-down-bold-circle"
             return "mdi:upload" if self._type == "up" else "mdi:download"
         
         # 状态图标联动
-        raw_status = self.hass.data[DOMAIN]["devices"].get(self._mac, {}).get("status")
+        raw_status = str(self.hass.data[DOMAIN]["devices"].get(self._mac, {}).get("status", "")).lower()
         if raw_status in ("off", "offline"):
             return "mdi:lan-disconnect"
-        if raw_status == "offline_shield":
+        elif raw_status == "offline_shield":
             return "mdi:shield-check"
         return "mdi:lan-connect"
 
@@ -209,37 +216,13 @@ class GbnpaDeviceSensor(SensorEntity):
         if self._type == "status":
             if not raw_val:
                 return "未知"
-            if raw_val in ("off", "offline"):
+            chk_status = str(raw_val).lower()
+            if chk_status in ("off", "offline"):
                 return "离线"
-            if raw_val == "offline_shield":
-                return "断线护盾生效中"
-            return f"在线 ({raw_val})"
-            
-        return raw_val
-    @property
-    def extra_state_attributes(self):
-        """核心重构：将次要高精数据作为附加属性收纳（副册美学）"""
-        device_data = self.hass.data[DOMAIN]["devices"].get(self._mac, {})
-        attrs = {}
-        
-        # 1. 将原生流量分别挂载到对应主力流量实体的属性中
-        if self._type == "up":
-            raw_up = device_data.get("raw_up")
-            if raw_up is not None:
-                attrs["raw_up_bit"] = raw_up
-        elif self._type == "down":
-            raw_down = device_data.get("raw_down")
-            if raw_down is not None:
-                attrs["raw_down_bit"] = raw_down
-                
-        # 2. 状态实体里顺手塞入 IP 等静态元数据，实现极致收纳
-        elif self._type == "status":
-            ip_addr = device_data.get("ip")
-            if ip_addr:
-                attrs["ip_address"] = ip_addr
-                
-        return attrs if attrs else None
-    
+            elif chk_status == "offline_shield":
+                return "离线 (护盾)"
+            return str(raw_val)
+
     async def async_added_to_hass(self):
         self.async_on_remove(
             async_dispatcher_connect(self.hass, SIGNAL_UPDATE, self.async_write_ha_state)

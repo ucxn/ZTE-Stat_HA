@@ -3,7 +3,6 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 DOMAIN = "gbnpa_router"
 SIGNAL_UPDATE = f"{DOMAIN}_data_update"
-SIGNAL_DISCOVERY = f"{DOMAIN}_discovery"
 
 GLOBAL_NAME_MAP = {
     "wan_up": "WAN总上传",
@@ -19,7 +18,6 @@ GLOBAL_NAME_MAP = {
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """动态生成实体与设备"""
     known_macs = set()
-    hass.data[DOMAIN]["_known_macs"] = known_macs
     known_global_keys = set()
     time_sensor_added = False
 
@@ -57,6 +55,9 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                     icon = "mdi:upload-network" if "up" in key else "mdi:download-network"                   
                 new_entities.append(GbnpaGlobalSensor(hass, key, cn_name, icon, is_traffic=True))
             
+        # 清理服务删掉设备后，同步释放本模式的 MAC 发现缓存
+        known_macs.intersection_update(mac for mac in data.get("devices", {}) if mac)
+
         # 2. 动态发现新加入的内网节点 MAC
         for mac, info in data.get("devices", {}).items():
             if not mac:
@@ -82,7 +83,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     # 监听 Webhook，并保存注销句柄
     hass.data[DOMAIN]["unsub_dispatcher"] = async_dispatcher_connect(
-        hass, SIGNAL_DISCOVERY, async_discover_new_entities
+        hass, SIGNAL_UPDATE, async_discover_new_entities
     )
 
     # 重载时直接吃现存内存数据，不必等下一次 Webhook 才恢复实体

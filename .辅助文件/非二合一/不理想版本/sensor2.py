@@ -3,7 +3,6 @@ from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 DOMAIN = "gbnpa_router"
 SIGNAL_UPDATE = f"{DOMAIN}_data_update"
-SIGNAL_DISCOVERY = f"{DOMAIN}_discovery"
 
 GLOBAL_NAME_MAP = {
     "wan_up": "WAN总上传",
@@ -19,7 +18,6 @@ GLOBAL_NAME_MAP = {
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """动态生成实体与设备"""
     known_macs = set()
-    hass.data[DOMAIN]["_known_macs"] = known_macs
     known_global_keys = set()
     time_sensor_added = False
 
@@ -28,7 +26,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         data = hass.data[DOMAIN]
         new_entities = []
         
-        # 1. 注册全局大盘设备，持续发现后续才出现的新键
+        # 1. 注册全局大盘设备，并持续发现后续才出现的新键
         if data.get("time_obj"):
             if not time_sensor_added:
                 time_sensor_added = True
@@ -57,6 +55,9 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                     icon = "mdi:upload-network" if "up" in key else "mdi:download-network"                   
                 new_entities.append(GbnpaGlobalSensor(hass, key, cn_name, icon, is_traffic=True))
             
+        # 清理服务删掉设备后，同步释放本模式的 MAC 发现缓存
+        known_macs.intersection_update(mac for mac in data.get("devices", {}) if mac)
+
         # 2. 动态发现新加入的内网节点 MAC
         for mac, info in data.get("devices", {}).items():
             if not mac:
@@ -78,7 +79,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     # 监听 Webhook，并保存注销句柄
     hass.data[DOMAIN]["unsub_dispatcher"] = async_dispatcher_connect(
-        hass, SIGNAL_DISCOVERY, async_discover_new_entities
+        hass, SIGNAL_UPDATE, async_discover_new_entities
     )
 
     # 重载时直接吃现存内存数据，不必等下一次 Webhook 才恢复实体
@@ -184,7 +185,7 @@ class GbnpaDeviceSensor(SensorEntity):
             return "mdi:upload" if self._type == "up" else "mdi:download"
         
         # 状态图标联动
-        raw_status = self.hass.data[DOMAIN]["devices"].get(self._mac, {}).get("status")
+        raw_status = str(self.hass.data[DOMAIN]["devices"].get(self._mac, {}).get("status", "")).lower()
         if raw_status in ("off", "offline"):
             return "mdi:lan-disconnect"
         if raw_status == "offline_shield":
@@ -209,9 +210,10 @@ class GbnpaDeviceSensor(SensorEntity):
         if self._type == "status":
             if not raw_val:
                 return "未知"
-            if raw_val in ("off", "offline"):
+            chk_status = str(raw_val).lower()
+            if chk_status in ("off", "offline"):
                 return "离线"
-            if raw_val == "offline_shield":
+            if chk_status == "offline_shield":
                 return "断线护盾生效中"
             return f"在线 ({raw_val})"
             

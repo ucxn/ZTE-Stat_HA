@@ -9,10 +9,9 @@ from homeassistant.helpers import device_registry as dr, entity_registry as er
 from homeassistant.util import dt as dt_util
 
 DOMAIN = "gbnpa_router"
-# 保持和你油猴脚本里的 webhook 路径一致！
+# 保持和 脚本猫Script 里的 webhook 路径一致！
 WEBHOOK_ID = "gbnpa_router_webhook" 
 SIGNAL_UPDATE = f"{DOMAIN}_data_update"
-SIGNAL_DISCOVERY = f"{DOMAIN}_discovery"
 PLATFORMS = ["sensor"]
 
 _LOGGER = logging.getLogger(__name__)
@@ -29,28 +28,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             data = raw_payload.get("payload", raw_payload)
             if not data:
                 _LOGGER.warning("[GBNPA] 警告：收到无效或空数据包，链路可能出现异常抖动。")            
-            # 更新内存数据；仅拓扑/键集合增长时触发实体发现
-            store = hass.data[DOMAIN]
-            discover = False
+            # 更新内存数据
+            # 0 废物变量，直接探测字典键值并内联转换
             if "timestamp" in data:
-                if store["time_obj"] is None:
-                    discover = True
-                store["time_obj"] = dt_util.utc_from_timestamp(data["timestamp"])
+                hass.data[DOMAIN]["time_obj"] = dt_util.utc_from_timestamp(data["timestamp"])
             if "global" in data:
-                target = store["global"]
-                n = len(target)
-                target.update(data["global"])
-                if len(target) != n:
-                    discover = True
+                hass.data[DOMAIN]["global"].update(data["global"])
             if "devices" in data:
-                target = store["devices"]
-                n = len(target)
-                target.update(data["devices"])
-                if len(target) != n:
-                    discover = True
-
-            if discover:
-                async_dispatcher_send(hass, SIGNAL_DISCOVERY)
+                hass.data[DOMAIN]["devices"].update(data["devices"])
+                
+            # 广播通知实体主数据已刷新
             async_dispatcher_send(hass, SIGNAL_UPDATE)
             
             return web.Response(text="GBNPA Payload Received OK")
@@ -100,15 +87,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                     (DOMAIN, mac), entry.entry_id
                 )
             else:
-                # 兼容较老的 HA 版本
+                # 兼容
                 device = device_registry.async_get_device(identifiers={(DOMAIN, mac)})
             if device:
                 device_registry.async_remove_device(device.id)
 
-        # 直接同步当前模式的发现缓存，不把设备扫描塞进每次 Webhook 热路径
-        known_macs = hass.data[DOMAIN].get("_known_macs")
-        if known_macs is not None:
-            known_macs.difference_update(purge_macs)
+        # 让各 sensor 模式同步刷新，并把已清理 MAC 从本地发现缓存中遗忘
         async_dispatcher_send(hass, SIGNAL_UPDATE)
         _LOGGER.info("[GBNPA] 已清理 %d 个离线设备", len(purge_macs))
         
