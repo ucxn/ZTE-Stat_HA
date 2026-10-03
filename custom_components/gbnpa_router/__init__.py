@@ -21,15 +21,10 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """通过 UI 配置初始化集成"""
     hass.data.setdefault(DOMAIN, {"devices": {}, "global": {}, "time_obj": None})
-    webhook_secret = entry.data.get("webhook_secret")
-    if not webhook_secret:
-        _LOGGER.error("[GBNPA] 缺少 webhook_secret，Webhook 未注册。请重新添加集成并设置鉴权密钥。")
-        return False
-
     async def handle_webhook(hass, webhook_id, request):
         """处理油猴发来的 JSON 数据包"""
         request_secret = request.headers.get("X-GBNPA-Secret", "")
-        if not secrets.compare_digest(request_secret, webhook_secret):
+        if not secrets.compare_digest(request_secret, WEBHOOK_ID):
             _LOGGER.warning("[GBNPA] Webhook 鉴权失败，请求已拒绝")
             return web.Response(status=401)
 

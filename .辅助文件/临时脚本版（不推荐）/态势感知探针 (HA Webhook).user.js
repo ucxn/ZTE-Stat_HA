@@ -39,7 +39,7 @@ return new Promise((resolve, reject) => {
     // =====================================================================
 
     // 2. 将快照推向 HA Webhook
-    const webhookUrl = "http://【198.51.100.0占位符请修改】/api/webhook/gbnpa_router_webhook";
+    const webhookUrl = "http://【198.51.100.0占位符IP地址请修改:8123】/api/webhook/gbnpa_router_webhook";
 
     GM_xmlhttpRequest({
         method: "POST",
