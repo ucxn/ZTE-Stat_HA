@@ -64,6 +64,7 @@ The system has two parts — the HA receiver and the JS collector. Set them up i
 3. At the top of the script, point the Webhook URL config at your HA address:
 ```javascript
 const WEBHOOK_URL = "http://[your HA-reachable IP]:8123/api/webhook/gbnpa_router_webhook";
+请根据实际需求：IP地址必设，端口号根据情况
 ```
 4. Log in to the router's web admin panel and leave that tab running in the background — data will start streaming in real time.
 
