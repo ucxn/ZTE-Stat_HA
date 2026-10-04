@@ -219,6 +219,8 @@ class GbnpaDeviceSensor(SensorEntity):
                 return "离线 (护盾)"
             return str(raw_val)
             
+        return None
+            
     @property
     def extra_state_attributes(self):
         """完全动态架构：带中文翻译引擎的属性副册"""

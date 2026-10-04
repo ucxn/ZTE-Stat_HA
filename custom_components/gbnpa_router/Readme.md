@@ -84,7 +84,7 @@ The project's core components:
 
 ## 📄 License
 
-[Mozilla Public License - v 2.0](https://www.mozilla.org/MPL/2.0)
+[Mozilla Public License](license.md)
 
 Special note: the brother project, **[ZTE-Stat_Max](https://github.com/ucxn/ZTE-Stat_Max)**, remains independent.
 

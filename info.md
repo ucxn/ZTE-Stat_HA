@@ -66,7 +66,7 @@ const webhookSecret = "你的鉴权密钥";
 
 ## 📄 协议 (License)
 
-[Mozilla Public License - v2.0](https://www.mozilla.org/MPL/2.0)
+[HA 主体部分每Python文件若无标注默认为：license.md](/custom_components/gbnpa_router/license.md)
 
 特别声明：**兄弟项目[ZTE-Stat_Max](https://github.com/ucxn/ZTE-Stat_Max)** 保持独立。
 

@@ -62,9 +62,9 @@ const WEBHOOK_URL = "http://[HA系统可访问IP]:8123/api/webhook/gbnpa_router_
 * 脚本抓取的 MAC 地址会在 HA 底层自动清洗（移除冒号并转小写）以符合系统规范，但在设备卡片中仍可保留原始信息用于跨插件链路聚合（Connections）。
 * 建议在路由器中为关键设备分配静态 IP，以便 HA 面板中能够更稳定地展示设备标识。
 
-## 📄 协议 (License)
+## 📄 许可证 (License)
 
-[Mozilla Public License - v 2.0](https://www.mozilla.org/MPL/2.0)
+https://github.com/ucxn/ZTE-Stat_HA/blob/main/custom_components/gbnpa_router/license.md
 
 特别声明：**依赖项 [ZTE-Stat_Max](https://github.com/ucxn/ZTE-Stat_Max)** 不变，保持独立.
 

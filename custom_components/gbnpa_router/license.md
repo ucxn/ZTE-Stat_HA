@@ -1,7 +1,5 @@
 # Mozilla Public License Version 1.1
 
-[Plain text version](https://www.mozilla.org/media/MPL/1.1/index.0c5913925d40.txt)
-
 ## 1. Definitions.
 
 <a id="section-1-0-1"></a>

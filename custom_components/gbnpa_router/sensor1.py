@@ -222,6 +222,8 @@ class GbnpaDeviceSensor(SensorEntity):
                 return "离线 (护盾)"
             return str(raw_val)
 
+        return None
+
     async def async_added_to_hass(self):
         self.async_on_remove(
             async_dispatcher_connect(self.hass, SIGNAL_UPDATE, self.async_write_ha_state)
