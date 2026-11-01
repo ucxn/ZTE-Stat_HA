@@ -16,6 +16,8 @@ class GbnpaConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         data_schema = vol.Schema({
             vol.Required("sensor_mode", default=1): vol.In(SENSOR_MODES),
             vol.Required("webhook_secret"): str,
+            # 设备位置：在家/离家 + 按接入路由分组；默认不勾，想改就重新添加集成
+            vol.Optional("enable_tracker", default=False): bool,
         })
 
         if user_input is not None:
