@@ -55,7 +55,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         key = (info.get("via_mac"), info.get("via"))
         if key[0] is None or applied.get(mac) == key or _is_offline(info):
             return
-        dev = dev_reg.async_get_device(identifiers={(DOMAIN, mac)})
+        dev = dev_reg.async_get_device_by_identifier((DOMAIN, mac), config_entry.entry_id)
         if dev is None:
             return
         gateway = ensure_gateway()
@@ -156,7 +156,7 @@ class GbnpaTracker(ScannerEntity):
         """所在房间 = 接入路由设备被用户分到的区域；via_mac 为空串（挂主路由）时看网关设备的区域。"""
         dev_reg = dr.async_get(self.hass)
         ident = (DOMAIN, f"router_{via_mac}") if via_mac else GATEWAY_ID
-        dev = dev_reg.async_get_device(identifiers={ident})
+        dev = dev_reg.async_get_device_by_identifier(ident, self.platform.config_entry.entry_id)
         if dev is None or dev.area_id is None:
             return None
         area = ar.async_get(self.hass).async_get_area(dev.area_id)
