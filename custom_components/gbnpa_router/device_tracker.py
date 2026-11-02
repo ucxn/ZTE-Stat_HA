@@ -54,11 +54,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     def apply_parent(mac, info):
         """via_mac 或路由名变了才动设备注册表；字段缺失（大包未到）或离线时原地不动。"""
-        via_mac = info.get("via_mac")
-        if via_mac is None or _is_offline(info):
-            return
-        key = (dr.format_mac(via_mac) if via_mac else "", info.get("via") or "")
-        if applied.get(mac) == key:
+        key = (info.get("via_mac"), info.get("via"))
+        if key[0] is None or applied.get(mac) == key or _is_offline(info):
             return
         dev = dev_reg.async_get_device(identifiers={(DOMAIN, mac)})
         if dev is None:
@@ -134,14 +131,12 @@ class GbnpaTracker(ScannerEntity):
     def ip_address(self):
         return self._data.get("ip") or None
 
-    @property
-    def hostname(self):
-        return self._data.get("name") or None
+    hostname = name
 
     @property
     def is_connected(self) -> bool:
-        info = self._data
-        return bool(info) and not _is_offline(info) and bool(info.get("status"))
+        status = str(self._data.get("status", "")).lower()
+        return bool(status) and status not in OFFLINE_STATUSES
 
     @property
     def extra_state_attributes(self):
@@ -160,7 +155,7 @@ class GbnpaTracker(ScannerEntity):
     def _room(self, via_mac):
         """所在房间 = 接入路由设备被用户分到的区域；via_mac 为空串（挂主路由）时看网关设备的区域。"""
         dev_reg = dr.async_get(self.hass)
-        ident = (DOMAIN, f"router_{dr.format_mac(via_mac)}") if via_mac else GATEWAY_ID
+        ident = (DOMAIN, f"router_{via_mac}") if via_mac else GATEWAY_ID
         dev = dev_reg.async_get_device(identifiers={ident})
         if dev is None or dev.area_id is None:
             return None
