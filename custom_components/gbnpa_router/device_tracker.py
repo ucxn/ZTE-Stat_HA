@@ -17,7 +17,6 @@ SIGNAL_UPDATE = f"{DOMAIN}_data_update"
 SIGNAL_DISCOVERY = f"{DOMAIN}_discovery"
 
 GATEWAY_ID = (DOMAIN, "gateway")
-MANUFACTURER = "哥哥科技 GBNPA"
 # 与 sensor 里 offline / offline_shield 的判断一致，再加上脚本快照里的中文“下线”
 OFFLINE_STATUSES = {"off", "offline", "offline_shield", "下线"}
 
@@ -48,7 +47,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             identifiers={(DOMAIN, mac)},
             connections={(dr.CONNECTION_NETWORK_MAC, dr.format_mac(mac))},
             name=info.get("name") or mac,
-            manufacturer=MANUFACTURER,
             model=info.get("ip") or "家庭网络设备",
         )
 
@@ -62,18 +60,20 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             return
         gateway = ensure_gateway()
         if key[0]:
+            # 制造商借来装路由名：设备列表按制造商分组，就是“一台路由一组”，路由自己靠 [AP] 前缀排在组首
+            name = key[1] or key[0]
             parent = dev_reg.async_get_or_create(
                 config_entry_id=config_entry.entry_id,
                 identifiers={(DOMAIN, f"router_{key[0]}")},
-                name=key[1] or f"接入路由 {key[0]}",
-                manufacturer=MANUFACTURER,
+                name=f"[AP] {name}",
+                manufacturer=name,
                 model="接入路由",
                 via_device=GATEWAY_ID,
             )
         else:
             parent = gateway  # via_mac 为空串：挂在主路由 / 网关下
-        if dev.via_device_id != parent.id:
-            dev_reg.async_update_device(dev.id, via_device_id=parent.id)
+        if dev.via_device_id != parent.id or dev.manufacturer != parent.manufacturer:
+            dev_reg.async_update_device(dev.id, via_device_id=parent.id, manufacturer=parent.manufacturer)
         applied[mac] = key
 
     @callback
