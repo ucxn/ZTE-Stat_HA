@@ -21,10 +21,6 @@ GATEWAY_ID = (DOMAIN, "gateway")
 OFFLINE_STATUSES = {"off", "offline", "offline_shield", "下线"}
 
 
-def _is_offline(info) -> bool:
-    return str(info.get("status", "")).lower() in OFFLINE_STATUSES
-
-
 async def async_setup_entry(hass, config_entry, async_add_entities):
     store = hass.data[DOMAIN]
     dev_reg = dr.async_get(hass)
@@ -53,7 +49,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     def apply_parent(mac, info):
         """via_mac 或路由名变了才动设备注册表；字段缺失（大包未到）或离线时原地不动。"""
         key = (info.get("via_mac"), info.get("via"))
-        if key[0] is None or applied.get(mac) == key or _is_offline(info):
+        if key[0] is None or applied.get(mac) == key or str(info.get("status", "")).lower() in OFFLINE_STATUSES:
             return
         dev = dev_reg.async_get_device_by_identifier((DOMAIN, mac), config_entry.entry_id)
         if dev is None:
