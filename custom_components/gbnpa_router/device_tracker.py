@@ -28,7 +28,7 @@ def _is_offline(info) -> bool:
 async def async_setup_entry(hass, config_entry, async_add_entities):
     store = hass.data[DOMAIN]
     dev_reg = dr.async_get(hass)
-    state = store.setdefault("_tracker", {"known": set(), "via": {}})
+    state = store.setdefault("_tracker", {"known": set(), "via": {}, "rooms": {}})
     known, applied = state["known"], state["via"]
 
     def ensure_gateway():
@@ -68,7 +68,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                 name=f"[AP] {name}",
                 manufacturer=name,
                 model="接入路由",
-                via_device=GATEWAY_ID,
+                via_device_id=gateway.id,
             )
         else:
             parent = gateway  # via_mac 为空串：挂在主路由 / 网关下
@@ -97,9 +97,18 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     config_entry.async_on_unload(async_dispatcher_connect(hass, SIGNAL_DISCOVERY, discover))
     config_entry.async_on_unload(async_dispatcher_connect(hass, SIGNAL_UPDATE, on_update))
+
+    @callback
+    def on_registry(event):
+        # 房间只在用户手动改区域时才会变，把查询挪到这一下点击上，推送的热路径只剩一次字典取值
+        if "area_id" in event.data.get("changes", ()):
+            state["rooms"].clear()
+
+    config_entry.async_on_unload(hass.bus.async_listen(dr.EVENT_DEVICE_REGISTRY_UPDATED, on_registry))
     # 重载时直接吃现存内存数据
     known.clear()
     applied.clear()
+    state["rooms"].clear()
     discover()
 
 
@@ -154,13 +163,15 @@ class GbnpaTracker(ScannerEntity):
 
     def _room(self, via_mac):
         """所在房间 = 接入路由设备被用户分到的区域；via_mac 为空串（挂主路由）时看网关设备的区域。"""
+        rooms = self.hass.data[DOMAIN]["_tracker"]["rooms"]
+        if via_mac in rooms:
+            return rooms[via_mac]
         dev_reg = dr.async_get(self.hass)
         ident = (DOMAIN, f"router_{via_mac}") if via_mac else GATEWAY_ID
         dev = dev_reg.async_get_device_by_identifier(ident, self.platform.config_entry.entry_id)
-        if dev is None or dev.area_id is None:
-            return None
-        area = ar.async_get(self.hass).async_get_area(dev.area_id)
-        return area.name if area else None
+        area = dev and dev.area_id and ar.async_get(self.hass).async_get_area(dev.area_id)
+        rooms[via_mac] = name = area.name if area else None
+        return name
 
     async def async_added_to_hass(self):
         self.async_on_remove(
